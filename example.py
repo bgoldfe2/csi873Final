@@ -5,6 +5,7 @@ Created on Sat Dec  2 14:27:12 2017
 @author: Bruce
 """
 
+import os
 import mnist, svmcmpl, cvxopt, random
 
 digits1 = [ 0 ]
@@ -13,7 +14,10 @@ digits2 = [ 1 ]
 m1 = 4000; m2 = 4000
 
 # read training data
-images, labels = mnist.read(digits1 + digits2, dataset = "training", path = "data/mnist")
+dpath = os.getcwd()+"\\data\\mnist"
+print( dpath)
+
+images, labels = mnist.read(digits1 + digits2, dataset = "training", path = dpath )
 images = images / 256.
 
 C1 = [ k for k in range(len(labels)) if labels[k] in digits1 ]

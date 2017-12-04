@@ -152,7 +152,7 @@ class SVM(object):
             self.b += self.sv_y[n]
             inside_sum = self.a * self.sv_y * K[ind[n],sv]
             each_b = self.sv_y[n] - np.sum(inside_sum,axis=0)
-            print("for i_0 = ",ind[n]," and alpha_i0 = ",self.a[n]," b is ",each_b)
+            #print("for i_0 = ",ind[n]," and alpha_i0 = ",self.a[n]," b is ",each_b)
             #self.b -= np.sum(self.a * self.sv_y * K[ind[n],sv])
             self.b -= np.sum(inside_sum)
 
@@ -167,7 +167,7 @@ class SVM(object):
             for a, sv_y, sv in zip(self.a, self.sv_y, self.sv):
                 s += a * sv_y * self.kernel(X[i], sv, self.gamma)
             y_predict[i] = s
-        print ("project return value is ",y_predict + self.b)
+        #print ("project return value is ",y_predict + self.b)
         return y_predict + self.b
 
     # Checks the sign of the projection in order to determine which side of 
@@ -191,13 +191,13 @@ if __name__ == "__main__":
         X_Train_6s = test1.trnData[test1.trnNum*6:(test1.trnNum*7)]
         y_Train_6s = test1.trnAns[test1.trnNum*6:(test1.trnNum*7)]
                 
-        HeatMap(X_Train_3s[0])
-        HeatMap(X_Train_3s[249])
-        HeatMap(X_Train_6s[0])
-        HeatMap(X_Train_6s[249])
+        #HeatMap(X_Train_3s[0])
+        #HeatMap(X_Train_3s[249])
+        #HeatMap(X_Train_6s[0])
+        #HeatMap(X_Train_6s[249])
 
-        print("first 3 ",y_Train_3s[0], " last 3 ",y_Train_3s[249])
-        print("first 6 ",y_Train_6s[0], " last 6 ",y_Train_6s[249])
+        #print("first 3 ",y_Train_3s[0], " last 3 ",y_Train_3s[249])
+        #print("first 6 ",y_Train_6s[0], " last 6 ",y_Train_6s[249])
         
         # Get the test data for 250 3s and 250 6s
         X_Test_3s = test1.tstData[test1.tstNum*3:(test1.tstNum*4)]
@@ -207,13 +207,13 @@ if __name__ == "__main__":
         y_Test_6s = test1.tstAns[test1.tstNum*6:(test1.tstNum*7)]
         
         
-        HeatMap(X_Test_3s[0])
-        HeatMap(X_Test_3s[249])
-        HeatMap(X_Test_6s[0])
-        HeatMap(X_Test_6s[249])
+        #HeatMap(X_Test_3s[0])
+        #HeatMap(X_Test_3s[249])
+        #HeatMap(X_Test_6s[0])
+        #HeatMap(X_Test_6s[249])
 
-        print("first 3 ",y_Test_3s[0], " last 3 ",y_Test_3s[249])
-        print("first 6 ",y_Test_6s[0], " last 6 ",y_Test_6s[249])
+        #print("first 3 ",y_Test_3s[0], " last 3 ",y_Test_3s[249])
+        #print("first 6 ",y_Test_6s[0], " last 6 ",y_Test_6s[249])
         
         # The read in labels will be for data input checking only
         # I will convert the 3s labels to be -1 and
@@ -227,8 +227,8 @@ if __name__ == "__main__":
         y_Test_3s = np.ones(test1.tstNum)
         y_Test_6s = np.ones(test1.tstNum) * -1
         
-        X_test = np.vstack((X_Train_3s, X_Train_6s))
-        y_test = np.hstack((y_Train_3s, y_Train_6s))
+        X_test = np.vstack((X_Test_3s, X_Test_6s))
+        y_test = np.hstack((y_Test_3s, y_Test_6s))
         
         # Train the model using the data
         test1.fit(X_train, y_train)
@@ -237,6 +237,7 @@ if __name__ == "__main__":
         y_predict = test1.predict(X_test)
         correct = np.sum(y_predict == y_test)
         print("%d out of %d predictions correct" % (correct, len(y_predict)))
+        print("Accuracy of ",correct/len(y_predict))
         
         
         

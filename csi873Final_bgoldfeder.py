@@ -64,20 +64,22 @@ def rbf(x, y, gamma):
     return np.exp(-1 * gamma * linalg.norm(x-y)**2 )
 
 class SVM(object):
-    def __init__(self, dpath,kernel=rbf, C=None, gamma=.05, trnNum=250, tstNum=250 ):
+    def __init__(self, dpath,kernel=rbf, C=None, gamma=.05, trnNum=250, tstNum=250,dsize =100 ):
         self.kernel = kernel
         self.C = C
         self.gamma = gamma
         if self.C is not None: self.C = float(self.C)
         self.trnNum = trnNum
         self.tstNum = tstNum
-        trnData, trnAns, tstData, tstAns = self.getData(dpath,self.trnNum,self.tstNum)
+        trnData, trnAns, tstData, tstAns = self.getData(dpath,self.trnNum,self.tstNum,dsize)
         self.trnData = trnData
         self.trnAns = trnAns
         self.tstData = tstData
-        self.tstAns = tstAns        
+        self.tstAns = tstAns     
+        
+
     
-    def getData(self,dpath,trnNum,tstNum):
+    def getData(self,dpath,trnNum,tstNum,dsize):
     
         # Read in the Training data first
         datasetTrn = ReadInFiles(dpath,'train')
@@ -106,6 +108,51 @@ class SVM(object):
         
         just_test_data = my_test[:,1:]
         answerTest = my_test[:,0] 
+        
+        # 50% Reduced pixel data and label sets
+        fiftyPtrnData = just_trn_data[1::2]
+        fiftyPtrnLabel = answerTrn[1::2]
+        fiftyPtstData = just_test_data[1::2]
+        fiftyPtstLabel = answerTest[1::2]
+        
+        # 75% Reduced pixel data and label sets
+        seventyfivePtrnData = fiftyPtrnData[1::2]
+        seventyfivePtrnLabel = fiftyPtrnLabel
+        seventyfivePtstData = fiftyPtstData[1::2]
+        seventyfivePtstLabel = fiftyPtstLabel
+
+        # 90% Reduced pixel data and label sets
+        ninetyPtrnData = just_trn_data[1::10]
+        ninetyPtrnLabel = answerTrn[1::10]
+        ninetyPtstData = just_test_data[1::10]
+        ninetyPtstLabel = answerTest[1::10]
+
+        # 95% Reduced pixel data and label sets
+        ninetyfivePtrnData = ninetyPtrnData[1::2]
+        ninetyfivePtrnLabel = ninetyPtrnLabel[1::2]
+        ninetyfivePtstData = ninetyPtstData[1::2]
+        ninetyfivePtstLabel = ninetyPtstLabel[1::2]
+        
+        if dsize == 50:
+            just_trn_data = fiftyPtrnData
+            answerTrn = fiftyPtrnLabel
+            just_test_data = fiftyPtstData
+            answerTest = fiftyPtstLabel
+        elif dsize == 75:
+            just_trn_data = seventyfivePtrnData
+            answerTrn = seventyfivePtrnLabel
+            just_test_data = seventyfivePtstData
+            answerTest = seventyfivePtstLabel
+        elif dsize == 90:
+            just_trn_data = ninetyPtrnData
+            answerTrn = ninetyPtrnLabel
+            just_test_data = ninetyPtstData
+            answerTest = ninetyPtstLabel
+        elif dsize == 95:
+            just_trn_data = ninetyfivePtrnData
+            answerTrn = ninetyfivePtrnLabel
+            just_test_data = ninetyfivePtstData
+            answerTest = ninetyfivePtstLabel
         
         return just_trn_data,answerTrn,just_test_data,answerTest
 
@@ -180,6 +227,7 @@ class SVM(object):
 
 if __name__ == "__main__":
     
+    
     def test_3v6():
         
         # Test1 is the dual soft margin SVM to classify 3s vs 6s only
@@ -230,15 +278,14 @@ if __name__ == "__main__":
         X_test = np.vstack((X_Test_3s, X_Test_6s))
         y_test = np.hstack((y_Test_3s, y_Test_6s))
         
-        # Train the model using the data
+        # Train the model using the full data set
         test1.fit(X_train, y_train)
         
         # Test model against the test data set
         y_predict = test1.predict(X_test)
         correct = np.sum(y_predict == y_test)
-        print("%d out of %d predictions correct" % (correct, len(y_predict)))
-        print("Accuracy of ",correct/len(y_predict))
-        
+        print("Full data set %d out of %d predictions correct" % (correct, len(y_predict)))
+        print("Full data set Accuracy of ",correct/len(y_predict))
         
         
     test_3v6()

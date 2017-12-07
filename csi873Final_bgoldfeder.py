@@ -13,7 +13,7 @@ import numpy as np
 from numpy import linalg
 import cvxopt
 import cvxopt.solvers
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import os
 
 def ReadInFiles(path,trnORtst):
@@ -111,48 +111,32 @@ class SVM(object):
         
         # 50% Reduced pixel data and label sets
         fiftyPtrnData = np.delete(just_trn_data, list(range(0, just_trn_data.shape[1], 2)), axis=1)
-        #fiftyPtrnLabel = np.delete(answerTrn, list(range(0, answerTrn.shape[1], 2)), axis=1)
         fiftyPtstData = np.delete(just_test_data, list(range(0, just_test_data.shape[1], 2)), axis=1)
-        #fiftyPtstLabel = np.delete(answerTest, list(range(0, answerTest.shape[1], 2)), axis=1)
         
         # 75% Reduced pixel data and label sets
         seventyfivePtrnData = np.delete(fiftyPtrnData, list(range(0, fiftyPtrnData.shape[1], 2)), axis=1)
-        #seventyfivePtrnLabel = fiftyPtrnLabel
         seventyfivePtstData = np.delete(fiftyPtstData, list(range(0, fiftyPtstData.shape[1], 2)), axis=1)
-        #seventyfivePtstLabel = fiftyPtstLabel
 
         # 90% Reduced pixel data and label sets
         ninetyPtrnData = just_trn_data[:,::10]
-        #ninetyPtrnLabel = answerTrn[1::10]
         ninetyPtstData = just_test_data[:,::10]
-        #ninetyPtstLabel = answerTest[1::10]
 
         # 95% Reduced pixel data and label sets
         ninetyfivePtrnData = ninetyPtrnData[:,::2]
-       # ninetyfivePtrnLabel = ninetyPtrnLabel[1::2]
         ninetyfivePtstData = ninetyPtstData[:,::2]
-        #ninetyfivePtstLabel = ninetyPtstLabel[1::2]
         
         if dsize == 50:
             just_trn_data = fiftyPtrnData
-            #answerTrn = fiftyPtrnLabel
             just_test_data = fiftyPtstData
-            #answerTest = fiftyPtstLabel
         elif dsize == 75:
             just_trn_data = seventyfivePtrnData
-            #answerTrn = seventyfivePtrnLabel
             just_test_data = seventyfivePtstData
-            #answerTest = seventyfivePtstLabel
         elif dsize == 90:
             just_trn_data = ninetyPtrnData
-           # answerTrn = ninetyPtrnLabel
             just_test_data = ninetyPtstData
-            #answerTest = ninetyPtstLabel
         elif dsize == 95:
             just_trn_data = ninetyfivePtrnData
-            #answerTrn = ninetyfivePtrnLabel
             just_test_data = ninetyfivePtstData
-            #answerTest = ninetyfivePtstLabel
         
         return just_trn_data,answerTrn,just_test_data,answerTest
 
@@ -178,6 +162,7 @@ class SVM(object):
         h = cvxopt.matrix(np.hstack((tmp1, tmp2)))
 
         # solve QP problem
+        cvxopt.solvers.options['show_progress'] = False
         solution = cvxopt.solvers.qp(P, q, G, h, A, b)
         
         # Lagrange multipliers
@@ -232,7 +217,7 @@ if __name__ == "__main__":
         
         # Test1 is the dual soft margin SVM to classify 3s vs 6s only
         # Get the training data for 250 3s and 250 6s
-        test1 = SVM(os.getcwd()+"\\data4\\",kernel=rbf,C=1000, dsize=dset )
+        test1 = SVM(os.getcwd()+"\\data4\\",kernel=rbf,C=100, dsize=dset )
         X_Train_3s = test1.trnData[test1.trnNum*3:(test1.trnNum*4)]
         y_Train_3s = test1.trnAns[test1.trnNum*3:(test1.trnNum*4)]
         
@@ -287,5 +272,8 @@ if __name__ == "__main__":
         print("Full data set %d out of %d predictions correct" % (correct, len(y_predict)))
         print("Full data set Accuracy of ",correct/len(y_predict))
         
-        
+    test_3v6(100)
+    test_3v6(50)
+    test_3v6(75)
+    test_3v6(90)        
     test_3v6(95)

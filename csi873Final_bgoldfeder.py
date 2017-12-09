@@ -89,12 +89,12 @@ def reduceDataQuality(dsize,just_trn_data,just_test_data):
     seventyfivePtstData = np.delete(fiftyPtstData, list(range(0, fiftyPtstData.shape[1], 2)), axis=1)
 
     # 90% Reduced pixel data and label sets
-    ninetyPtrnData = just_trn_data[:,::10]
-    ninetyPtstData = just_test_data[:,::10]
+    ninetyPtrnData = just_trn_data[:,::10].copy()
+    ninetyPtstData = just_test_data[:,::10].copy()
 
     # 95% Reduced pixel data and label sets
-    ninetyfivePtrnData = ninetyPtrnData[:,::2]
-    ninetyfivePtstData = ninetyPtstData[:,::2]
+    ninetyfivePtrnData = ninetyPtrnData[:,::2].copy()
+    ninetyfivePtstData = ninetyPtstData[:,::2].copy()
     
     if dsize == 50:
         just_trn_data = fiftyPtrnData
@@ -136,8 +136,7 @@ class SVM(object):
         self.gamma = gamma
         if self.C is not None: self.C = float(self.C)
         self.trnNum = trnNum
-        self.tstNum = tstNum
-        #trnData, trnAns, tstData, tstAns = self.getData(dpath,self.trnNum,self.tstNum,dsize)
+        self.tstNum = trnNum
         self.trnData = trnData
         self.trnAns = trnAns
         self.tstData = tstData
@@ -220,15 +219,16 @@ class SVM(object):
 if __name__ == "__main__":
     
     
-    def test_3v6(dset,trnData, trnAns, tstData, tstAns):
+    def test_3v6(dset,trnData, trnAns, tstData, tstAns,trnN, tstN):
         
         # Adjust the data quality
-        trnData_red, tstData_red = reduceDataQuality(dset,trnData,tstData)
+        if dset != 100:
+            trnData, tstData = reduceDataQuality(dset,trnData,tstData)
        
         # Test1 is the dual soft margin SVM to classify 3s vs 6s only
         # Get the training data for 250 3s and 250 6s
-        test1 = SVM(trnData_red, trnAns, tstData_red, tstAns, \
-                    kernel=rbf,C=100,gamma=.05)
+        test1 = SVM(trnData, trnAns, tstData, tstAns, \
+                    kernel=rbf,C=100,gamma=.05, trnNum=trnN, tstNum=tstN)
         X_Train_3s = test1.trnData[test1.trnNum*3:(test1.trnNum*4)]
         y_Train_3s = test1.trnAns[test1.trnNum*3:(test1.trnNum*4)]
         
@@ -236,29 +236,31 @@ if __name__ == "__main__":
         y_Train_6s = test1.trnAns[test1.trnNum*6:(test1.trnNum*7)]
                 
         #HeatMap(X_Train_3s[0])
-        #HeatMap(X_Train_3s[249])
+        #HeatMap(X_Train_3s[test1.trnNum-1])
         #HeatMap(X_Train_6s[0])
-        #HeatMap(X_Train_6s[249])
+        #HeatMap(X_Train_6s[test1.trnNum-1])
 
-        #print("first 3 ",y_Train_3s[0], " last 3 ",y_Train_3s[249])
-        #print("first 6 ",y_Train_6s[0], " last 6 ",y_Train_6s[249])
-        
+        #print("first 3 ",y_Train_3s[0], " last 3 ",y_Train_3s[test1.trnNum-1])
+        #print("first 6 ",y_Train_6s[0], " last 6 ",y_Train_6s[test1.trnNum-1])
+        np.savetxt("y_Train_3s.txt",y_Train_3s)
+        np.savetxt("y_Train_6s.txt",y_Train_6s)
         # Get the test data for 250 3s and 250 6s
         X_Test_3s = test1.tstData[test1.tstNum*3:(test1.tstNum*4)]
         y_Test_3s = test1.tstAns[test1.tstNum*3:(test1.tstNum*4)]
         
         X_Test_6s = test1.tstData[test1.tstNum*6:(test1.tstNum*7)]
         y_Test_6s = test1.tstAns[test1.tstNum*6:(test1.tstNum*7)]
-        
-        
+    
+    
         #HeatMap(X_Test_3s[0])
-        #HeatMap(X_Test_3s[249])
+        #HeatMap(X_Test_3s[test1.tstNum-1])
         #HeatMap(X_Test_6s[0])
-        #HeatMap(X_Test_6s[249])
+        #HeatMap(X_Test_6s[test1.tstNum-1])
 
-        #print("first 3 ",y_Test_3s[0], " last 3 ",y_Test_3s[249])
-        #print("first 6 ",y_Test_6s[0], " last 6 ",y_Test_6s[249])
-        
+        #print("first 3 ",y_Test_3s[0], " last 3 ",y_Test_3s[test1.tstNum-1])
+        #print("first 6 ",y_Test_6s[0], " last 6 ",y_Test_6s[test1.tstNum-1])
+      
+    
         # The read in labels will be for data input checking only
         # I will convert the 3s labels to be -1 and
         # the 6s labels to be 1 for input into the SVM
@@ -290,8 +292,70 @@ if __name__ == "__main__":
     dsize =100
     trnData, trnAns, tstData, tstAns = getData(dpath,trnNum,tstNum)
         
-    test_3v6(100,trnData, trnAns, tstData, tstAns)
-    test_3v6(50,trnData, trnAns, tstData, tstAns)
-    test_3v6(75,trnData, trnAns, tstData, tstAns)
-    test_3v6(90,trnData, trnAns, tstData, tstAns)        
-    test_3v6(95,trnData, trnAns, tstData, tstAns)
+    #test_3v6(100,trnData, trnAns, tstData, tstAns)
+    #test_3v6(50,trnData, trnAns, tstData, tstAns)
+    #test_3v6(75,trnData, trnAns, tstData, tstAns)
+#    test_3v6(90,trnData, trnAns, tstData, tstAns,trnNum,tstNum)        
+    #test_3v6(95,trnData, trnAns, tstData, tstAns)
+    
+    trnData_50 = trnData[::2,:].copy()
+    tstData_50 = tstData[::2,:].copy()
+    trnAns_50 = trnAns[::2].copy()
+    tstAns_50 = tstAns[::2].copy()
+    trnNum = 125
+    tstNum = 125
+    #print("trn50 ",trnData_50.shape[0]," tst50 ",tstData_50.shape[0])
+
+    test_3v6(100,trnData_50, trnAns_50, tstData_50, tstAns_50,trnNum,tstNum)
+    
+    # this will result in 62 and 63 (odd/even) outputs
+    # to even out to 62 images per number, I remove every 125th
+    remove_even_63s = [0,125,250,375,500]
+    
+    r75 = trnData_50[::2,:].copy()
+    s75 = tstData_50[::2,:].copy()
+    trnData_75 = np.delete(r75,remove_even_63s,axis=0)
+    tstData_75 = np.delete(s75,remove_even_63s,axis=0)
+    trnAns_75 = np.delete(trnAns_50[::2],remove_even_63s,axis=0)
+    tstAns_75 = np.delete(tstAns_50[::2],remove_even_63s,axis=0)
+    #np.savetxt("r75.txt",trnAns_75)
+    #np.savetxt("trnData_75.txt",tstAns_75)
+    
+    trnNum = 62
+    tstNum = 62
+    #print("trn75 ",trnData_75.shape[0]," tst75 ",tstData_75.shape[0])
+    #print(tstAns[62*3]," ",tstAns[62*4])
+    
+    test_3v6(100,trnData_75, trnAns_75, tstData_75, tstAns_75,trnNum,tstNum)
+
+    # The 90% test for number of examples    
+    trnData_90 = trnData[::10,:].copy()
+    tstData_90 = tstData[::10,:].copy()
+    
+    trnAns_90 = trnAns[::10].copy()
+    tstAns_90 = tstAns[::10].copy()
+    #np.savetxt("trnData_90.txt",tstAns_90)
+    
+    trnNum = 25
+    tstNum = 25
+    
+    test_3v6(100,trnData_90, trnAns_90, tstData_90, tstAns_90,trnNum,tstNum)
+    
+    # this will result in 12 and 13 (odd/even) outputs
+    # to even out to 12 images per number, I remove every 25th
+    remove_even_13s = [0,25,50,75,100]
+    
+    r95 = trnData_90[::2,:].copy()
+    s95 = tstData_90[::2,:].copy()
+    trnData_95 = np.delete(r95,remove_even_13s,axis=0)
+    tstData_95 = np.delete(s95,remove_even_13s,axis=0)
+    trnAns_95 = np.delete(trnAns_90[::2],remove_even_13s,axis=0)
+    tstAns_95 = np.delete(tstAns_90[::2],remove_even_13s,axis=0)
+    #np.savetxt("r95.txt",trnAns_95)
+    #np.savetxt("trnData_95.txt",tstAns_95)
+    
+    trnNum = 12
+    tstNum = 12
+    #print("trn95 ",trnData_95.shape[0]," tst95 ",tstData_95.shape[0])
+    
+    test_3v6(100,trnData_95, trnAns_95, tstData_95, tstAns_95,trnNum,tstNum)

@@ -13,7 +13,7 @@ import numpy as np
 from numpy import linalg
 import cvxopt
 import cvxopt.solvers
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import os
 
 def ReadInFiles(path,trnORtst):
@@ -47,6 +47,71 @@ def ReadInOneList(fullData,maxRows):
             allData.append(fullData[j][k])
     return np.asarray(allData)
 
+def getData(dpath,trnNum,tstNum):
+
+    # Read in the Training data first
+    datasetTrn = ReadInFiles(dpath,'train')
+    my_data = ReadInOneList(datasetTrn,trnNum)
+    
+    # Convert the 0-255 to 0 through 1 values in data
+    my_data[:,1:] /= 255.0
+    
+    
+    # randomize the rows for better training
+    #np.random.shuffle(my_data)
+    inNum,cols = my_data.shape    
+    just_trn_data = my_data[:,1:]
+    answerTrn = my_data[:,0]
+    
+    # Read in the test data
+    #dpath2 = os.getcwd()+'\data3'
+    dataset2 = ReadInFiles(dpath,'test')
+    my_test = ReadInOneList(dataset2,tstNum) 
+    
+    tstNum,cols = my_test.shape
+    #print('num rows ',tstNum)
+    
+    # Convert the 0-255 to 0 through 1 values in data
+    my_test[:,1:] /= 255.0
+    
+    just_test_data = my_test[:,1:]
+    answerTest = my_test[:,0] 
+    
+    return just_trn_data,answerTrn,just_test_data,answerTest
+
+def reduceDataQuality(dsize,just_trn_data,just_test_data):   
+    # 50% Reduced pixel data and label sets
+    fiftyPtrnData = np.delete(just_trn_data, list(range(0, just_trn_data.shape[1], 2)), axis=1)
+    fiftyPtstData = np.delete(just_test_data, list(range(0, just_test_data.shape[1], 2)), axis=1)
+    
+    # 75% Reduced pixel data and label sets
+    seventyfivePtrnData = np.delete(fiftyPtrnData, list(range(0, fiftyPtrnData.shape[1], 2)), axis=1)
+    seventyfivePtstData = np.delete(fiftyPtstData, list(range(0, fiftyPtstData.shape[1], 2)), axis=1)
+
+    # 90% Reduced pixel data and label sets
+    ninetyPtrnData = just_trn_data[:,::10]
+    ninetyPtstData = just_test_data[:,::10]
+
+    # 95% Reduced pixel data and label sets
+    ninetyfivePtrnData = ninetyPtrnData[:,::2]
+    ninetyfivePtstData = ninetyPtstData[:,::2]
+    
+    if dsize == 50:
+        just_trn_data = fiftyPtrnData
+        just_test_data = fiftyPtstData
+    elif dsize == 75:
+        just_trn_data = seventyfivePtrnData
+        just_test_data = seventyfivePtstData
+    elif dsize == 90:
+        just_trn_data = ninetyPtrnData
+        just_test_data = ninetyPtstData
+    elif dsize == 95:
+        just_trn_data = ninetyfivePtrnData
+        just_test_data = ninetyfivePtstData
+        
+    return just_trn_data,just_test_data
+    
+
 def HeatMap(numberIn):
     #heat map to show numbers
     plt.matshow(numberIn.reshape(28,28))
@@ -64,14 +129,15 @@ def rbf(x, y, gamma):
     return np.exp(-1 * gamma * linalg.norm(x-y)**2 )
 
 class SVM(object):
-    def __init__(self, dpath,kernel=rbf, C=None, gamma=.05, trnNum=250, tstNum=250,dsize =100 ):
+    def __init__(self, trnData, trnAns, tstData, tstAns,kernel=rbf, \
+                 C=None, gamma=.05, trnNum=250, tstNum=250):
         self.kernel = kernel
         self.C = C
         self.gamma = gamma
         if self.C is not None: self.C = float(self.C)
         self.trnNum = trnNum
         self.tstNum = tstNum
-        trnData, trnAns, tstData, tstAns = self.getData(dpath,self.trnNum,self.tstNum,dsize)
+        #trnData, trnAns, tstData, tstAns = self.getData(dpath,self.trnNum,self.tstNum,dsize)
         self.trnData = trnData
         self.trnAns = trnAns
         self.tstData = tstData
@@ -79,66 +145,7 @@ class SVM(object):
         
 
     
-    def getData(self,dpath,trnNum,tstNum,dsize):
-    
-        # Read in the Training data first
-        datasetTrn = ReadInFiles(dpath,'train')
-        my_data = ReadInOneList(datasetTrn,trnNum)
-        
-        # Convert the 0-255 to 0 through 1 values in data
-        my_data[:,1:] /= 255.0
-        
-        
-        # randomize the rows for better training
-        #np.random.shuffle(my_data)
-        inNum,cols = my_data.shape    
-        just_trn_data = my_data[:,1:]
-        answerTrn = my_data[:,0]
-        
-        # Read in the test data
-        #dpath2 = os.getcwd()+'\data3'
-        dataset2 = ReadInFiles(dpath,'test')
-        my_test = ReadInOneList(dataset2,tstNum) 
-        
-        tstNum,cols = my_test.shape
-        #print('num rows ',tstNum)
-        
-        # Convert the 0-255 to 0 through 1 values in data
-        my_test[:,1:] /= 255.0
-        
-        just_test_data = my_test[:,1:]
-        answerTest = my_test[:,0] 
-        
-        # 50% Reduced pixel data and label sets
-        fiftyPtrnData = np.delete(just_trn_data, list(range(0, just_trn_data.shape[1], 2)), axis=1)
-        fiftyPtstData = np.delete(just_test_data, list(range(0, just_test_data.shape[1], 2)), axis=1)
-        
-        # 75% Reduced pixel data and label sets
-        seventyfivePtrnData = np.delete(fiftyPtrnData, list(range(0, fiftyPtrnData.shape[1], 2)), axis=1)
-        seventyfivePtstData = np.delete(fiftyPtstData, list(range(0, fiftyPtstData.shape[1], 2)), axis=1)
 
-        # 90% Reduced pixel data and label sets
-        ninetyPtrnData = just_trn_data[:,::10]
-        ninetyPtstData = just_test_data[:,::10]
-
-        # 95% Reduced pixel data and label sets
-        ninetyfivePtrnData = ninetyPtrnData[:,::2]
-        ninetyfivePtstData = ninetyPtstData[:,::2]
-        
-        if dsize == 50:
-            just_trn_data = fiftyPtrnData
-            just_test_data = fiftyPtstData
-        elif dsize == 75:
-            just_trn_data = seventyfivePtrnData
-            just_test_data = seventyfivePtstData
-        elif dsize == 90:
-            just_trn_data = ninetyPtrnData
-            just_test_data = ninetyPtstData
-        elif dsize == 95:
-            just_trn_data = ninetyfivePtrnData
-            just_test_data = ninetyfivePtstData
-        
-        return just_trn_data,answerTrn,just_test_data,answerTest
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
@@ -167,7 +174,7 @@ class SVM(object):
         
         # Lagrange multipliers
         a = np.ravel(solution['x'])
-        print("alphas? ",a[a>1])
+        #print("alphas? ",a[a>1])
 
         # Support vectors have non zero lagrange multipliers
         sv = a > 1e-1
@@ -213,11 +220,15 @@ class SVM(object):
 if __name__ == "__main__":
     
     
-    def test_3v6(dset):
+    def test_3v6(dset,trnData, trnAns, tstData, tstAns):
         
+        # Adjust the data quality
+        trnData_red, tstData_red = reduceDataQuality(dset,trnData,tstData)
+       
         # Test1 is the dual soft margin SVM to classify 3s vs 6s only
         # Get the training data for 250 3s and 250 6s
-        test1 = SVM(os.getcwd()+"\\data4\\",kernel=rbf,C=100, dsize=dset )
+        test1 = SVM(trnData_red, trnAns, tstData_red, tstAns, \
+                    kernel=rbf,C=100,gamma=.05)
         X_Train_3s = test1.trnData[test1.trnNum*3:(test1.trnNum*4)]
         y_Train_3s = test1.trnAns[test1.trnNum*3:(test1.trnNum*4)]
         
@@ -272,8 +283,15 @@ if __name__ == "__main__":
         print("Full data set %d out of %d predictions correct" % (correct, len(y_predict)))
         print("Full data set Accuracy of ",correct/len(y_predict))
         
-    test_3v6(100)
-    test_3v6(50)
-    test_3v6(75)
-    test_3v6(90)        
-    test_3v6(95)
+    #Get the data destructed levels 50,75,90,95
+    dpath = os.getcwd() + "\\data4\\"
+    trnNum=250
+    tstNum=250
+    dsize =100
+    trnData, trnAns, tstData, tstAns = getData(dpath,trnNum,tstNum)
+        
+    test_3v6(100,trnData, trnAns, tstData, tstAns)
+    test_3v6(50,trnData, trnAns, tstData, tstAns)
+    test_3v6(75,trnData, trnAns, tstData, tstAns)
+    test_3v6(90,trnData, trnAns, tstData, tstAns)        
+    test_3v6(95,trnData, trnAns, tstData, tstAns)

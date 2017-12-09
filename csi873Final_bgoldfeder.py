@@ -291,6 +291,8 @@ if __name__ == "__main__":
     tstNum=250
     dsize =100
     trnData, trnAns, tstData, tstAns = getData(dpath,trnNum,tstNum)
+    
+###############  Reduced Pixel Quality Reduction  ################
         
     #test_3v6(100,trnData, trnAns, tstData, tstAns)
     #test_3v6(50,trnData, trnAns, tstData, tstAns)
@@ -298,6 +300,12 @@ if __name__ == "__main__":
 #    test_3v6(90,trnData, trnAns, tstData, tstAns,trnNum,tstNum)        
     #test_3v6(95,trnData, trnAns, tstData, tstAns)
     
+################## SVD Reduced Quality Section #################
+ 
+    
+    
+    
+################## Reduced Number of Samples Section
     trnData_50 = trnData[::2,:].copy()
     tstData_50 = tstData[::2,:].copy()
     trnAns_50 = trnAns[::2].copy()
@@ -359,3 +367,5 @@ if __name__ == "__main__":
     #print("trn95 ",trnData_95.shape[0]," tst95 ",tstData_95.shape[0])
     
     test_3v6(100,trnData_95, trnAns_95, tstData_95, tstAns_95,trnNum,tstNum)
+    
+    

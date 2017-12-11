@@ -301,10 +301,21 @@ if __name__ == "__main__":
     #test_3v6(95,trnData, trnAns, tstData, tstAns)
     
 ################## SVD Reduced Quality Section #################
- 
-    
-    
-    
+
+    U,D,Vt = linalg.svd(trnData,full_matrices=False)
+    X_a = np.dot(np.dot(U, np.diag(D)), Vt)
+    print(np.std(trnData), np.std(X_a), np.std(trnData - X_a))   
+    print(D.shape)
+    #np.savetxt("svdFull.txt",D)
+    #np.savetxt("svd50.txt",D)
+    percentVals = [392,196,78,39]
+    for p in percentVals:
+        D[p:]=0
+        X_bar50 = np.dot(np.dot(U, np.diag(D)), Vt)
+        print("SVD for",round(1-p/784,2),"% reduction")
+        test_3v6(100,X_bar50, trnAns, tstData, tstAns,trnNum,tstNum)
+
+    asdf    
 ################## Reduced Number of Samples Section
     trnData_50 = trnData[::2,:].copy()
     tstData_50 = tstData[::2,:].copy()

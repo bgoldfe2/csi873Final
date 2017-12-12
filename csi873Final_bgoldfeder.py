@@ -198,7 +198,7 @@ class SVM(object):
         print("b is ",self.b)
 
     def project(self, X):
-        # Calculates y_i * (w.x+b)
+        # Calculates sigma a * sv_y * K(xi,sv)
         y_predict = np.zeros(len(X))
         for i in range(len(X)):
             s = 0
@@ -212,6 +212,9 @@ class SVM(object):
     # the decision boundary it is on
     def predict(self, X):
         return np.sign(self.project(X))
+    
+    def predict2(self, X):
+        return self.project(X)
     
 #todo This needs to be adapted to our 784 byte vectors and the binary
 # Classifier e.g. 3's and 6's are 1 and -1 respectively
@@ -285,6 +288,201 @@ if __name__ == "__main__":
         print("Full data set %d out of %d predictions correct" % (correct, len(y_predict)))
         print("Full data set Accuracy of ",correct/len(y_predict))
         
+    def test_EvO(trnData, trnAns, tstData, tstAns,trnN):
+        
+        # Test1 is the dual soft margin SVM to classify 3s vs 6s only
+        # Get the training data for 250 3s and 250 6s
+        test1 = SVM(trnData, trnAns, tstData, tstAns, \
+                    kernel=rbf,C=100,gamma=.05, trnNum=trnN, tstNum=trnN)
+        digitSize = 250
+        start = 0
+        end = 0
+        trnEvenDataList = []
+        trnOddDataList = []
+        tstEvenDataList = []
+        tstOddDataList = []
+        for n in range(0,10):
+            if n % 2 == 0:   # even
+                start = n*digitSize
+                end = start + trnN
+                print("n is ",n,"start",start,"end",end)
+                d1 = trnData[start:end].tolist()
+                print("d1 len",len(d1))
+                for dx in d1:
+                    trnEvenDataList.append(dx)
+                    
+                print("dataListEvenTrain len is ",len(trnEvenDataList))
+                HeatMap(np.asarray(trnEvenDataList[len(trnEvenDataList)-1]))
+                
+                print("n is ",n,"start",start,"end",end)
+                d1 = tstData[start:end].tolist()
+                print("d1 len",len(d1))
+                for dx in d1:
+                    tstEvenDataList.append(dx)
+                    
+                print("dataListEvenTest len is ",len(tstEvenDataList))
+                HeatMap(np.asarray(tstEvenDataList[len(tstEvenDataList)-1]))
+        
+            else:
+            
+                start = n*digitSize
+                end = start + trnN
+                print("n is ",n,"start",start,"end",end)
+                d1 = trnData[start:end].tolist()
+                print("d1 len",len(d1))
+                for dx in d1:
+                    trnOddDataList.append(dx)
+                    
+                print("dataListODDTrain len is ",len(trnOddDataList))
+                HeatMap(np.asarray(trnOddDataList[len(trnOddDataList)-1]))
+                
+                print("n is ",n,"start",start,"end",end)
+                d1 = tstData[start:end].tolist()
+                print("d1 len",len(d1))
+                for dx in d1:
+                    tstOddDataList.append(dx)
+                    
+                print("dataListODDTest len is ",len(tstOddDataList))
+                HeatMap(np.asarray(tstOddDataList[len(tstOddDataList)-1]))
+                
+        
+        trnEvenData = np.asarray(tstEvenDataList)
+        print("shape of trainevendata",trnEvenData.shape)
+        trnOddData = np.asarray(trnOddDataList)
+             
+        tstEvenData = np.asarray(tstEvenDataList)
+               
+        tstOddData = np.asarray(tstOddDataList)
+        
+        
+        trnEvenLabs = np.ones(trnN*5)
+        trnOddLabs = np.ones(trnN*5) * -1
+        
+        tstEvenLabs = np.ones(trnN*5)
+        tstOddLabs = np.ones(trnN*5) * -1
+        
+        X_train = np.vstack((trnEvenData,trnOddData))
+        print("shape of xtrain",X_train.shape)
+        y_train = np.hstack((trnEvenLabs,trnOddLabs))
+        
+        X_test = np.vstack((tstEvenData,tstOddData))
+        y_test = np.hstack((tstEvenLabs,tstOddLabs))
+        
+        ##### Test the input data for correctness  ####
+        HeatMap(X_train[0])
+        HeatMap(X_train[499])
+        HeatMap(X_train[500])
+        HeatMap(X_train[999])
+
+        #print("first 3 ",y_Train_3s[0], " last 3 ",y_Train_3s[test1.trnNum-1])
+        #print("first 6 ",y_Train_6s[0], " last 6 ",y_Train_6s[test1.trnNum-1])
+        np.savetxt("labels4evenodd.txt",y_train)
+
+        
+        # Train the model using the odds and even sets of numbers
+        test1.fit(X_train,y_train)
+
+        # Test model against the test data set
+        y_predict = test1.predict(X_test)
+        correct = np.sum(y_predict == y_test)
+        print("Full data set %d out of %d predictions correct" % (correct, len(y_predict)))
+        print("Full data set Accuracy of ",correct/len(y_predict))
+        
+        
+    def test_OnevAll(trnData, trnAns, tstData, tstAns,trnN):
+        
+        # This is the dual soft margin SVM to classify One versus All
+        # for all of the 10 numbers, resulting in 10 different
+        # hyperplanes.
+        # Get the training data of 100 for each number
+        test1 = SVM(trnData, trnAns, tstData, tstAns, \
+                    kernel=rbf,C=100,gamma=.05, trnNum=trnN, tstNum=trnN)
+        digitSize = 250
+        start = 0
+        end = 0
+        trnDataList = []
+        tstDataList = []
+        for n in range(0,10):
+            
+            start = n*digitSize
+            end = start + trnN
+            #print("n is ",n,"start",start,"end",end)
+            d1 = trnData[start:end].tolist()
+            #print("d1 len",len(d1))
+            for dx in d1:
+                trnDataList.append(dx)
+                
+            #print("dataListTrain len is ",len(trnDataList))
+            #HeatMap(np.asarray(trnDataList[len(trnDataList)-1]))
+            
+            #print("n is ",n,"start",start,"end",end)
+            d1 = tstData[start:end].tolist()
+            #print("d1 len",len(d1))
+            for dx in d1:
+                tstDataList.append(dx)
+                
+        
+        # The training and test data sets of 100 numbers each
+        X_train = np.asarray(trnDataList)
+        print("shape of traindata",X_train.shape)
+        
+        X_test = np.asarray(tstDataList)
+        
+        ##### Test the input data for correctness  ####
+        #HeatMap(X_train[0])
+        #HeatMap(X_train[499])
+        #HeatMap(X_train[500])
+        #HeatMap(X_train[999])
+       
+       
+        # Loop over the digits 0 - 9 and test versus the Rest
+        ds = 100
+        y_train = []
+        y_test = []
+        maxClassList = []
+        for x in range(0,10):
+            bottom = [-1] * (x*ds)
+            oneLabels = [1] * ds
+            top = [-1] * (1000 - (x*ds+ds))
+            
+            y_t = bottom + oneLabels + top
+            
+            print("len y_train",len(y_train))
+            
+            y_train = np.asarray(y_t)
+            y_train = y_train.astype(np.double)
+            np.savetxt("labels4oneVrest.txt",y_train)
+           
+            y_test = np.asarray(y_t)
+            y_test = y_test.astype(np.double)
+            print("shape of X",X_train.shape,"y",y_train.shape)
+            
+            # Train the model using the odds and even sets of numbers
+            test1.fit(X_train,y_train)
+    
+            # Test model against the test data set
+            y_predict = test1.predict(X_test)
+            correct = np.sum(y_predict == y_test)
+            print("The number",str(x),"versus Rest %d out of %d predictions correct" % (correct, len(y_predict)))
+            print("The number",str(x),"versus Rest Accuracy of ",correct/len(y_predict))
+            
+            # Find the maximum classification number for each test sample
+            y_predict_max = test1.predict2(X_test)
+            print("max array shape",y_predict_max.shape)
+            maxClassList.append(y_predict_max)
+            
+        
+        values = np.vstack(maxClassList)
+        np.savetxt("values.txt",values)
+        predictMax = np.argmax(values,axis=0)
+        np.savetxt("max2.txt",predictMax)
+               
+        for x in range(0,10):
+            correct = np.sum(predictMax[x*ds:((x+1)*ds)] == x)
+            print("The MAX number",str(x),"using all the hyperplanes max distance %d out of %d predictions correct" % (correct, ((x+1)*ds)-x*ds))
+            print("The MAX number",str(x),"versus Rest Accuracy of ",correct/ds)
+        
+       
     #Get the data destructed levels 50,75,90,95
     dpath = os.getcwd() + "\\data4\\"
     trnNum=250
@@ -294,11 +492,11 @@ if __name__ == "__main__":
     
 ###############  Reduced Pixel Quality Reduction  ################
         
-    #test_3v6(100,trnData, trnAns, tstData, tstAns)
-    #test_3v6(50,trnData, trnAns, tstData, tstAns)
-    #test_3v6(75,trnData, trnAns, tstData, tstAns)
-#    test_3v6(90,trnData, trnAns, tstData, tstAns,trnNum,tstNum)        
-    #test_3v6(95,trnData, trnAns, tstData, tstAns)
+    test_3v6(100,trnData, trnAns, tstData, tstAns)
+    test_3v6(50,trnData, trnAns, tstData, tstAns)
+    test_3v6(75,trnData, trnAns, tstData, tstAns)
+    test_3v6(90,trnData, trnAns, tstData, tstAns,trnNum,tstNum)        
+    test_3v6(95,trnData, trnAns, tstData, tstAns)
     
 ################## SVD Reduced Quality Section #################
 
@@ -314,8 +512,7 @@ if __name__ == "__main__":
         X_bar50 = np.dot(np.dot(U, np.diag(D)), Vt)
         print("SVD for",round(1-p/784,2),"% reduction")
         test_3v6(100,X_bar50, trnAns, tstData, tstAns,trnNum,tstNum)
-
-    asdf    
+    
 ################## Reduced Number of Samples Section
     trnData_50 = trnData[::2,:].copy()
     tstData_50 = tstData[::2,:].copy()
@@ -378,5 +575,15 @@ if __name__ == "__main__":
     #print("trn95 ",trnData_95.shape[0]," tst95 ",tstData_95.shape[0])
     
     test_3v6(100,trnData_95, trnAns_95, tstData_95, tstAns_95,trnNum,tstNum)
+    
+#############  Odd versus Even Section   ############################
+    
+    trnN = 100
+    test_EvO(trnData, trnAns, tstData, tstAns,trnN)
+    
+################# One versus All Section  #########################
+    
+    trn = 100
+    test_OnevAll(trnData, trnAns, tstData, tstAns,trnN)
     
     

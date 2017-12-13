@@ -142,10 +142,6 @@ class SVM(object):
         self.tstData = tstData
         self.tstAns = tstAns     
         
-
-    
-
-
     def fit(self, X, y):
         n_samples, n_features = X.shape
 
@@ -344,16 +340,12 @@ if __name__ == "__main__":
                     
                 print("dataListODDTest len is ",len(tstOddDataList))
                 HeatMap(np.asarray(tstOddDataList[len(tstOddDataList)-1]))
-                
         
         trnEvenData = np.asarray(tstEvenDataList)
-        print("shape of trainevendata",trnEvenData.shape)
+        #print("shape of trainevendata",trnEvenData.shape)
         trnOddData = np.asarray(trnOddDataList)
-             
         tstEvenData = np.asarray(tstEvenDataList)
-               
         tstOddData = np.asarray(tstOddDataList)
-        
         
         trnEvenLabs = np.ones(trnN*5)
         trnOddLabs = np.ones(trnN*5) * -1
@@ -421,7 +413,6 @@ if __name__ == "__main__":
             for dx in d1:
                 tstDataList.append(dx)
                 
-        
         # The training and test data sets of 100 numbers each
         X_train = np.asarray(trnDataList)
         print("shape of traindata",X_train.shape)
@@ -433,7 +424,6 @@ if __name__ == "__main__":
         #HeatMap(X_train[499])
         #HeatMap(X_train[500])
         #HeatMap(X_train[999])
-       
        
         # Loop over the digits 0 - 9 and test versus the Rest
         ds = 100
@@ -468,6 +458,7 @@ if __name__ == "__main__":
             
             # Find the maximum classification number for each test sample
             y_predict_max = test1.predict2(X_test)
+            
             print("max array shape",y_predict_max.shape)
             maxClassList.append(y_predict_max)
             
@@ -483,20 +474,26 @@ if __name__ == "__main__":
             print("The MAX number",str(x),"versus Rest Accuracy of ",correct/ds)
         
        
-    #Get the data destructed levels 50,75,90,95
-    dpath = os.getcwd() + "\\data4\\"
+######## First Get the full  #######
+        # dsize is the percent reduction number as an integer e.g. 75
+        # 100 is the full image size
+            
+    #dpath = os.getcwd() + "\\data4\\"
+    dpath = os.getcwd() + "\\data\\"
+
     trnNum=250
     tstNum=250
     dsize =100
     trnData, trnAns, tstData, tstAns = getData(dpath,trnNum,tstNum)
     
 ###############  Reduced Pixel Quality Reduction  ################
+    ###########data destructed levels 50,75,90,95#######
         
-    test_3v6(100,trnData, trnAns, tstData, tstAns)
-    test_3v6(50,trnData, trnAns, tstData, tstAns)
-    test_3v6(75,trnData, trnAns, tstData, tstAns)
+    test_3v6(100,trnData, trnAns, tstData, tstAns,trnNum,tstNum)
+    test_3v6(50,trnData, trnAns, tstData, tstAns,trnNum,tstNum)
+    test_3v6(75,trnData, trnAns, tstData, tstAns,trnNum,tstNum)
     test_3v6(90,trnData, trnAns, tstData, tstAns,trnNum,tstNum)        
-    test_3v6(95,trnData, trnAns, tstData, tstAns)
+    test_3v6(95,trnData, trnAns, tstData, tstAns,trnNum,tstNum)
     
 ################## SVD Reduced Quality Section #################
 
